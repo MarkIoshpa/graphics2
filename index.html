@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Graphics HW2</title>
+    <link rel="stylesheet"  type="text/css" href="includes/style.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+    <meta charset="utf-8">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="form-group row">
+                    <label for="gear" class="col-sm-3 col-form-label">Choose the type of transformation:<br><br>Load graphics data file: <input type="file" name="file" value="#000000"></label>
+                    <div class="col-sm-8 row">
+                        <div class="col-sm-2">
+                            <label>Translation<input type="radio" name="shapeRadioBtn" class="form-control" value="translation" checked></label>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Scaling<input type="radio" name="shapeRadioBtn" class="form-control" value="scaling"></label>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Rotating<input type="radio" name="shapeRadioBtn" class="form-control" value="rotating"></label>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Mirroring<input type="radio" name="shapeRadioBtn" class="form-control" value="mirroring"></label>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Shearing<input type="radio" name="shapeRadioBtn" class="form-control" value="shearing"></label>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <canvas width="1000" height="1000"></canvas>            
+    </div>
+</body>
+</html>
