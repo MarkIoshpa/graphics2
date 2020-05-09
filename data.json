@@ -104,6 +104,14 @@
     "p2y": 500
   },
   {
+    "type": "line",
+    "color": "black",
+    "p1x": 100,
+    "p1y": 400,
+    "p2x": 150,
+    "p2y": 500
+  },
+  {
     "type": "curve",
     "color": "blue",
     "p1x": 0,
