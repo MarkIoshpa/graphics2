@@ -8,11 +8,47 @@ $(document).ready(function() {
     var canvas = $("canvas");
     var context = canvas[0].getContext('2d');
     var shapeSelected = $( 'input[name=shapeRadioBtn]:checked' ).val();
+    var movex = $( 'input[name=movex]' ).val();
+    var movey = $( 'input[name=movey]' ).val();
+    var scale = $( 'input[name=scale]' ).val();
+    var mirror = $( 'input[name=mirror]' ).val();
+    var rotation = $( 'input[name=rotation]' ).val();
+    var shearA = $( 'input[name=shearA]' ).val();
+    var shearB = $( 'input[name=shearB]' ).val();
 
     // Choose type of transformation
     $('input[name=shapeRadioBtn]').change(function(){
         shapeSelected = $( 'input[name=shapeRadioBtn]:checked' ).val();
         pointArr = [];
+    });
+
+    $('input[name=movex]').change(function(){
+        console.log(movex)
+        movex = $( 'input[name=movex]' ).val();
+    });
+
+    $('input[name=movey]').change(function(){
+        movey = $( 'input[name=movey]' ).val();
+    });
+
+    $('input[name=scale]').change(function(){
+        scale = $( 'input[name=scale]' ).val();
+    });
+
+    $('input[name=mirror]').change(function(){
+        mirror = $( 'input[name=mirror]' ).val();
+    });
+
+    $('input[name=rotation]').change(function(){
+        rotation = $( 'input[name=rotation]' ).val();
+    });
+
+    $('input[name=shearA]').change(function(){
+        shearA = $( 'input[name=shearA]' ).val();
+    });
+
+    $('input[name=shearB]').change(function(){
+        shearB = $( 'input[name=shearB]' ).val();
     });
 
     // Upload graphics data file
@@ -32,30 +68,24 @@ $(document).ready(function() {
     });
 
     canvas.click(function(e) {
-        let elem = $(this);
-       
         switch(shapeSelected) {
             case "translation":
-                let movex = e.pageX - elem.offset().left;
-                let movey = e.pageY - elem.offset().top;
-                translation(objects, movex, movey);
+                translation(objects, parseInt(movex), parseInt(movey));
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
             case "scaling":
-                let scale = 0.9
                 transformation(objects, [[scale, 0],[0, scale]], true);
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
             case "rotating":
-                let radian = -0.1
+                let radian = rotation * Math.PI/180
                 transformation(objects, [[Math.cos(radian), Math.sin(radian)],[-Math.sin(radian), Math.cos(radian)]], true);
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
             case "mirroring":
-                let mirror = "type3"
                 let mirrorMatrix
                 switch(mirror) {
                     case "type1": 
@@ -73,9 +103,7 @@ $(document).ready(function() {
                 drawObject(context, objects);
                 break;
             case "shearing":
-                let a = 0.1
-                let b = 0
-                transformation(objects, [[1, b], [a, 1]], true);
+                transformation(objects, [[1, shearA], [shearB, 1]], true);
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
@@ -227,6 +255,8 @@ function drawBezierCurve(context, p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, lines)
         let endY = calculateCurvePoint(cy, 1-(t+step));
 
         drawLine(context, startX, startY, endX, endY);
+        if(Math.floor((t+step)*100)/100 === 1)
+            break
     }
 }
 

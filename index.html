@@ -14,16 +14,16 @@
         <header>
             <nav>
                 <div class="form-group row">
-                    <label for="gear" class="col-sm-3 col-form-label">Choose the type of transformation:<br><br>Load graphics data file: <input type="file" name="file" value="#000000"></label>
+                    <label for="gear" class="col-sm-3 col-form-label">Choose the type of transformation:<br>(Click on canvas to apply)<br><br>Load graphics data file: <input type="file" name="file" value="#000000"></label>
                     <div class="col-sm-8 row">
                         <div class="col-sm-2">
                             <label>Translation<input type="radio" name="shapeRadioBtn" class="form-control" value="translation" checked></label>
                         </div>
                         <div class="col-sm-2">
-                            <label>Scaling<input type="radio" name="shapeRadioBtn" class="form-control" value="scaling"></label>
+                            <label>Scaling<input type="radio" name="shapeRadioBtn" class="form-control" value="scaling" min="0"></label>
                         </div>
                         <div class="col-sm-2">
-                            <label>Rotating<input type="radio" name="shapeRadioBtn" class="form-control" value="rotating"></label>
+                            <label>Rotating<input type="radio" name="shapeRadioBtn" class="form-control" value="rotating" min="0" max="360"></label>
                         </div>
                         <div class="col-sm-2">
                             <label>Mirroring<input type="radio" name="shapeRadioBtn" class="form-control" value="mirroring"></label>
@@ -32,10 +32,35 @@
                             <label>Shearing<input type="radio" name="shapeRadioBtn" class="form-control" value="shearing"></label>
                         </div>
                     </div>
+                    <div class="col-sm-8 row">
+                        <div class="col-sm-2">
+                        <label>Move X: <input type="number" name="movex" class="form-control" value="0" step="1"></label>
+                        <label>Move Y: <input type="number" name="movey" class="form-control" value="0" step="1"></label>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Scale size: <input type="number" name="scale" class="form-control" value="1" step="0.1"></label>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Degrees:<input type="number" name="rotation" class="form-control" value="90" step="1"></label>
+                        </div>
+                        <div class="col-sm-2">
+                            <label for="mirror">Mirror type:</label>
+
+                            <select id="mirror">
+                              <option value="type1">Through X</option>
+                              <option value="type2">Through Y</option>
+                              <option value="type3">Through XY</option>
+                            </select> 
+                        </div>
+                        <div class="col-sm-2">
+                            <label>X shear: <input type="number" name="shearA" class="form-control" value="0" step="0.1"></label>
+                            <label>Y shear: <input type="number" name="shearB" class="form-control" value="0" step="0.1"></label>
+                        </div>
+                    </div>
                 </div>
             </nav>
         </header>
-        <canvas width="1000" height="1000"></canvas>            
+        <canvas width="1000" height="800"></canvas>            
     </div>
 </body>
 </html>
