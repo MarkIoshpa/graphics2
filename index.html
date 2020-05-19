@@ -14,8 +14,13 @@
         <header>
             <nav>
                 <div class="form-group row">
-                    <label for="gear" class="col-sm-3 col-form-label">Choose the type of transformation:<br>(Click on canvas to apply)<br><br>Load graphics data file: <input type="file" name="file" value="#000000"></label>
-                    <div class="col-sm-8 row">
+                    <label for="gear" class="col-sm-3 col-form-label">Choose the type of transformation:<br>
+                        <span style="color:red">(Click on canvas to apply)</span><br><br>Load graphics data file: 
+                        <input class="form-control-file" type="file" name="file" value="#000000"><br><br>
+                        <button id="reset-button">Reset Graphics</button>
+                    </label>
+                    
+                    <div class="col-sm-9 row">
                         <div class="col-sm-2">
                             <label>Translation<input type="radio" name="shapeRadioBtn" class="form-control" value="translation" checked></label>
                         </div>
@@ -31,17 +36,22 @@
                         <div class="col-sm-2">
                             <label>Shearing<input type="radio" name="shapeRadioBtn" class="form-control" value="shearing"></label>
                         </div>
+                        <div class="col-sm-2">
+                            
+                        </div>
                     </div>
-                    <div class="col-sm-8 row">
+                    <div class="col-sm-9 row">
                         <div class="col-sm-2">
                         <label>Move X: <input type="number" name="movex" class="form-control" value="0" step="1"></label>
                         <label>Move Y: <input type="number" name="movey" class="form-control" value="0" step="1"></label>
                         </div>
                         <div class="col-sm-2">
-                            <label>Scale size: <input type="number" name="scale" class="form-control" value="1" step="0.1"></label>
+                            <label>Scale size: <input type="number" name="scale" class="form-control" value="1" step="0.1"></label><h6></h6>
+                            <label>Scale about point<input type="checkbox" name="scalepoint" class="form-control" value="yes" style="position: relative; right: -25px; top: -30px"></label>
                         </div>
                         <div class="col-sm-2">
-                            <label>Degrees:<input type="number" name="rotation" class="form-control" value="90" step="1"></label>
+                            <label>Degrees:<input type="number" name="rotation" class="form-control" value="90" step="1"></label><h6></h6>
+                            <label>Rotate about point<input type="checkbox" name="rotatepoint" class="form-control" value="yes" style="position: relative; right: -25px; top: -30px"></label>
                         </div>
                         <div class="col-sm-2">
                             <label for="mirror">Mirror type:</label>
@@ -52,6 +62,7 @@
                               <option value="type3">Through XY</option>
                             </select> 
                         </div>
+                        <h6>(Input or swipe canvas)</h5>
                         <div class="col-sm-2">
                             <label>X shear: <input type="number" name="shearA" class="form-control" value="0" step="0.1"></label>
                             <label>Y shear: <input type="number" name="shearB" class="form-control" value="0" step="0.1"></label>
@@ -60,7 +71,7 @@
                 </div>
             </nav>
         </header>
-        <canvas width="1000" height="800"></canvas>            
+        <canvas width="1000" height="700" style="border: 5px solid grey; box-sizing:content-box;"></canvas>              
     </div>
 </body>
 </html>

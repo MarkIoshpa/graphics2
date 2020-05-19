@@ -4,7 +4,6 @@
 $(document).ready(function() {
     var reader;
     var objects = null;
-    var pointArr = [];
     var canvas = $("canvas");
     var context = canvas[0].getContext('2d');
     var shapeSelected = $( 'input[name=shapeRadioBtn]:checked' ).val();
@@ -15,15 +14,16 @@ $(document).ready(function() {
     var rotation = $( 'input[name=rotation]' ).val();
     var shearA = $( 'input[name=shearA]' ).val();
     var shearB = $( 'input[name=shearB]' ).val();
+    var rotatepoint = $( 'input[name=rotatepoint]' ).is(":checked") ? true : false;
+    var scalepoint = $( 'input[name=scalepoint]' ).is(":checked") ? true : false;
+    let srcShape = null;
 
     // Choose type of transformation
     $('input[name=shapeRadioBtn]').change(function(){
         shapeSelected = $( 'input[name=shapeRadioBtn]:checked' ).val();
-        pointArr = [];
     });
 
     $('input[name=movex]').change(function(){
-        console.log(movex)
         movex = $( 'input[name=movex]' ).val();
     });
 
@@ -51,25 +51,50 @@ $(document).ready(function() {
         shearB = $( 'input[name=shearB]' ).val();
     });
 
+    $('input[name=rotatepoint]').click(function(){
+        if($(this).is(":checked")){
+            rotatepoint = true
+        }
+        else if($(this).is(":not(:checked)")){
+            rotatepoint = false
+        }
+    });
+
+    $('input[name=scalepoint]').click(function(){
+        if($(this).is(":checked")){
+            scalepoint = true
+        }
+        else if($(this).is(":not(:checked)")){
+            scalepoint = false
+        }
+    });
+
     // Upload graphics data file
     $('input[type=file]').on('change', event => {
         reader = new FileReader();
         reader.onload = event => {
             context.clearRect(0, 0, canvas.width(), canvas.height()); // clear canvas on new file load
             try {
-                objects = JSON.parse(event.target.result)
+                objects = JSON.parse(event.target.result);
+                srcShape = JSON.parse(event.target.result)
                 drawObject(context, objects);
+                resizeObjectsToCanvasSize(canvas, context, objects);
             } catch (error) {
-                objects = null
+                objects = null;
                 alert("Failed to read the graphics data file!\n\n" + error);
             }
         }
         reader.readAsText(event.target.files[0]);
     });
 
+    // Perform transformation on click
     canvas.click(function(e) {
         if(objects === null)
             return
+
+        let elem = $(this);
+        let xPos = e.pageX - elem.offset().left;
+        let yPos = e.pageY - elem.offset().top;
 
         switch(shapeSelected) {
             case "translation":
@@ -77,19 +102,46 @@ $(document).ready(function() {
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
+
             case "scaling":
+                if(scalepoint) {
+                    xPos = e.pageX - elem.offset().left;
+                    yPos = e.pageY - elem.offset().top;
+                }
+                else {
+                    xPos = canvas.width()/2;
+                    yPos = canvas.height()/2;
+                }
+
+                translation(objects, -xPos, -yPos);
                 transformation(objects, [[scale, 0],[0, scale]], true);
+                translation(objects, xPos, yPos);
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
+
             case "rotating":
-                let radian = rotation * Math.PI/180
+                if(rotatepoint) {
+                    xPos = e.pageX - elem.offset().left;
+                    yPos = e.pageY - elem.offset().top;
+                }
+                else {
+                    xPos = canvas.width()/2;
+                    yPos = canvas.height()/2;
+                }
+
+                let radian = rotation * Math.PI/180 // Convert degrees to radians
+                translation(objects, -xPos, -xPos);
                 transformation(objects, [[Math.cos(radian), Math.sin(radian)],[-Math.sin(radian), Math.cos(radian)]]);
+                translation(objects, xPos, yPos);
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
+
             case "mirroring":
                 let mirrorMatrix
+
+                // Chooses the mirror type (through x, y or xy)
                 switch(mirror) {
                     case "type1": 
                         mirrorMatrix = [[-1, 0], [0, 1]]
@@ -112,8 +164,11 @@ $(document).ready(function() {
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
+
             case "shearing":
+                translation(objects, -canvas.width()/2, -canvas.height()/2);
                 transformation(objects, [[1, shearA], [shearB, 1]]);
+                translation(objects, canvas.width()/2, canvas.height()/2);
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
@@ -121,8 +176,41 @@ $(document).ready(function() {
                 break;
         }
     });
+
+    // Shear by swiping canvas
+    let shearStart = {x: 0, y: 0};
+    let shearEnd = {x: 0, y: 0};
+    canvas.mousedown(e => {
+        const canvas = document.querySelector('canvas')
+        const rect = canvas.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+        shearStart = {x, y};
+    });
+    canvas.mouseup(e => {
+        const ctx = document.querySelector('canvas')
+        const rect = ctx.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+        shearEnd = {x, y};
+        const diffX = (shearEnd.x - shearStart.x) / 1000;
+        const diffY = (shearEnd.y - shearStart.y) / 1000;
+        if (shapeSelected == 'shearing') {
+            transformation(objects, [[1, diffX], [diffY, 1]]);
+            context.clearRect(0, 0, canvas.width(), canvas.height());
+            drawObject(context, objects);
+        }
+    });
+
+    // Reset canvas to original file
+    $( "#reset-button" ).click(function() {
+        objects = JSON.parse(JSON.stringify(srcShape))
+        context.clearRect(0, 0, canvas.width(), canvas.height()); // clear canvas on new file load
+        drawObject(context, objects);
+    });
 });
 
+// Moves objects to specified coordinates
 function translation(objects, movex, movey) {
     objects.forEach(item => {
         switch(item.type) {
@@ -150,6 +238,7 @@ function translation(objects, movex, movey) {
     })
 }
 
+// Transforms objects according to given matrix, scaleRadius true will also scale the circle radius
 function transformation(objects, matrix, scaleRadius=false) {
     objects.forEach(item => {
         switch(item.type) {
@@ -172,6 +261,7 @@ function transformation(objects, matrix, scaleRadius=false) {
     })
 }
 
+// Performs the transform operation on a point
 function transform(object, x, y, matrix) {
     let point = multiplyMatrixByVector(matrix, [object[x], object[y]])
     object[x] = point[0]
@@ -204,6 +294,59 @@ function drawObject(context, data) {
                     break;
             }
     })).then(() => {if(errorArray.length > 0) alert("File contains errors!\n\n" + errorArray)})
+}
+
+// Function finds the max coordinate values of the object, and performs scaling operation to resize them to canvas size
+function resizeObjectsToCanvasSize(canvas, context, data) {
+    let errorArray = []
+    let xMax = 0
+    let yMax = 0
+    Promise.all(data.map(item => {
+        if(validate(item, errorArray))
+            switch(item.type) {
+                case "line":
+                    if(item.p1x > xMax)
+                        xMax = item.p1x;
+                    if(item.p2x > xMax)
+                        xMax = item.p2x;
+                    if(item.p1y > yMax)
+                        yMax = item.p1y;
+                    if(item.p2y > yMax)
+                        yMax = item.p2y;
+                    break;
+                case "circle":
+                    if(item.centerx + item.radius > xMax)
+                        xMax = item.centerx + item.radius;
+                    if(item.centery + item.radius > yMax)
+                        yMax = item.centery + item.radius;
+                    break;
+                case "curve":
+                    if(item.p1x > xMax)
+                        xMax = item.p1x;
+                    if(item.p2x > xMax)
+                        xMax = item.p2x;
+                    if(item.p1y > yMax)
+                        yMax = item.p1y;
+                    if(item.p2y > yMax)
+                        yMax = item.p2y;
+                    if(item.p3x > xMax)
+                        xMax = item.p3x;
+                    if(item.p4x > xMax)
+                        xMax = item.p4x;
+                    if(item.p3y > yMax)
+                        yMax = item.p3y;
+                    if(item.p4y > yMax)
+                        yMax = item.p4y;
+                    break;
+                default:
+                    break;
+            }
+    })).then(() => {
+        let max = xMax > yMax ? xMax : yMax;
+        transformation(data, [[canvas.width() / max, 0],[0, canvas.width() / max]], true);
+        context.clearRect(0, 0, canvas.width(), canvas.height());
+        drawObject(context, data);
+    })
 }
 
 // Validates that object contains all required fields, writes missing field errors into errorArray
