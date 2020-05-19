@@ -3,7 +3,7 @@
 // When page is loaded, get the updated radio button value
 $(document).ready(function() {
     var reader;
-    var objects;
+    var objects = null;
     var pointArr = [];
     var canvas = $("canvas");
     var context = canvas[0].getContext('2d');
@@ -11,7 +11,7 @@ $(document).ready(function() {
     var movex = $( 'input[name=movex]' ).val();
     var movey = $( 'input[name=movey]' ).val();
     var scale = $( 'input[name=scale]' ).val();
-    var mirror = $( 'input[name=mirror]' ).val();
+    var mirror = $( 'select[name=mirror]' ).val();
     var rotation = $( 'input[name=rotation]' ).val();
     var shearA = $( 'input[name=shearA]' ).val();
     var shearB = $( 'input[name=shearB]' ).val();
@@ -35,8 +35,8 @@ $(document).ready(function() {
         scale = $( 'input[name=scale]' ).val();
     });
 
-    $('input[name=mirror]').change(function(){
-        mirror = $( 'input[name=mirror]' ).val();
+    $('select[name=mirror]').change(function(){
+        mirror = $( 'select[name=mirror]' ).val();
     });
 
     $('input[name=rotation]').change(function(){
@@ -68,6 +68,9 @@ $(document).ready(function() {
     });
 
     canvas.click(function(e) {
+        if(objects === null)
+            return
+
         switch(shapeSelected) {
             case "translation":
                 translation(objects, parseInt(movex), parseInt(movey));
@@ -81,7 +84,7 @@ $(document).ready(function() {
                 break;
             case "rotating":
                 let radian = rotation * Math.PI/180
-                transformation(objects, [[Math.cos(radian), Math.sin(radian)],[-Math.sin(radian), Math.cos(radian)]], true);
+                transformation(objects, [[Math.cos(radian), Math.sin(radian)],[-Math.sin(radian), Math.cos(radian)]]);
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
@@ -90,20 +93,27 @@ $(document).ready(function() {
                 switch(mirror) {
                     case "type1": 
                         mirrorMatrix = [[-1, 0], [0, 1]]
+                        transformation(objects, mirrorMatrix);
+                        translation(objects, canvas.width(), 0);
                         break
                     case "type2": 
                         mirrorMatrix = [[1, 0], [0, -1]]
+                        transformation(objects, mirrorMatrix);
+                        console.log(canvas.height)
+                        translation(objects, 0, canvas.height());
                         break
                     case "type3": 
                         mirrorMatrix = [[-1, 0], [0, -1]]
+                        transformation(objects, mirrorMatrix);
+                        translation(objects, canvas.width(), canvas.height());
                         break
                 }
-                transformation(objects, mirrorMatrix, true);
+
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
             case "shearing":
-                transformation(objects, [[1, shearA], [shearB, 1]], true);
+                transformation(objects, [[1, shearA], [shearB, 1]]);
                 context.clearRect(0, 0, canvas.width(), canvas.height());
                 drawObject(context, objects);
                 break;
