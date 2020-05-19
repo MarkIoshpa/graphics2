@@ -3,6 +3,7 @@
 // When page is loaded, get the updated radio button value
 $(document).ready(function() {
     var reader;
+    var objects;
     var pointArr = [];
     var canvas = $("canvas");
     var context = canvas[0].getContext('2d');
@@ -20,8 +21,10 @@ $(document).ready(function() {
         reader.onload = event => {
             context.clearRect(0, 0, canvas.width(), canvas.height()); // clear canvas on new file load
             try {
-                drawObject(context, JSON.parse(event.target.result));
+                objects = JSON.parse(event.target.result)
+                drawObject(context, objects);
             } catch (error) {
+                objects = null
                 alert("Failed to read the graphics data file!\n\n" + error);
             }
         }
@@ -30,25 +33,113 @@ $(document).ready(function() {
 
     canvas.click(function(e) {
         let elem = $(this);
-        let xPos = e.pageX - elem.offset().left;
-        let yPos = e.pageY - elem.offset().top;
        
         switch(shapeSelected) {
             case "translation":
+                let movex = e.pageX - elem.offset().left;
+                let movey = e.pageY - elem.offset().top;
+                translation(objects, movex, movey);
+                context.clearRect(0, 0, canvas.width(), canvas.height());
+                drawObject(context, objects);
                 break;
             case "scaling":
+                let scale = 0.9
+                transformation(objects, [[scale, 0],[0, scale]], true);
+                context.clearRect(0, 0, canvas.width(), canvas.height());
+                drawObject(context, objects);
                 break;
             case "rotating":
+                let radian = -0.1
+                transformation(objects, [[Math.cos(radian), Math.sin(radian)],[-Math.sin(radian), Math.cos(radian)]], true);
+                context.clearRect(0, 0, canvas.width(), canvas.height());
+                drawObject(context, objects);
                 break;
             case "mirroring":
+                let mirror = "type3"
+                let mirrorMatrix
+                switch(mirror) {
+                    case "type1": 
+                        mirrorMatrix = [[-1, 0], [0, 1]]
+                        break
+                    case "type2": 
+                        mirrorMatrix = [[1, 0], [0, -1]]
+                        break
+                    case "type3": 
+                        mirrorMatrix = [[-1, 0], [0, -1]]
+                        break
+                }
+                transformation(objects, mirrorMatrix, true);
+                context.clearRect(0, 0, canvas.width(), canvas.height());
+                drawObject(context, objects);
                 break;
             case "shearing":
+                let a = 0.1
+                let b = 0
+                transformation(objects, [[1, b], [a, 1]], true);
+                context.clearRect(0, 0, canvas.width(), canvas.height());
+                drawObject(context, objects);
                 break;
             default:
                 break;
         }
     });
 });
+
+function translation(objects, movex, movey) {
+    objects.forEach(item => {
+        switch(item.type) {
+            case "line":
+                item.p1x = item.p1x + movex;
+                item.p2x = item.p2x + movex;
+                item.p1y = item.p1y + movey;
+                item.p2y = item.p2y + movey;
+                break;
+            case "circle":
+                item.centerx = item.centerx + movex;
+                item.centery = item.centery + movey;
+                break;
+            case "curve":
+                item.p1x = item.p1x + movex;
+                item.p2x = item.p2x + movex;
+                item.p3x = item.p3x + movex;
+                item.p4x = item.p4x + movex;
+                item.p1y = item.p1y + movey;
+                item.p2y = item.p2y + movey;
+                item.p3y = item.p3y + movey;
+                item.p4y = item.p4y + movey;
+                break;
+        }
+    })
+}
+
+function transformation(objects, matrix, scaleRadius=false) {
+    objects.forEach(item => {
+        switch(item.type) {
+            case "line":
+                transform(item, "p1x", "p1y", matrix);
+                transform(item, "p2x", "p2y", matrix);
+                break;
+            case "circle":
+                transform(item, "centerx", "centery", matrix);
+                if(scaleRadius)
+                    item.radius = item.radius*matrix[0][0];
+                break;
+            case "curve":
+                transform(item, "p1x", "p1y", matrix);
+                transform(item, "p2x", "p2y", matrix);
+                transform(item, "p3x", "p3y", matrix);
+                transform(item, "p4x", "p4y", matrix);
+                break;
+        }
+    })
+}
+
+function transform(object, x, y, matrix) {
+    let point = multiplyMatrixByVector(matrix, [object[x], object[y]])
+    object[x] = point[0]
+    object[y] = point[1]
+}
+
 
 // Receives data object containing an array of lines, circles and curves, the function draws them according to object type
 function drawObject(context, data) {
